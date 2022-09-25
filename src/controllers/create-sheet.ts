@@ -28,18 +28,15 @@ async function copyFile(realFileId: string, pageId: string, email: string) {
         fileId: realFileId,
       },
 
-      async function(err: any, response: any) {
-        console.log(response);
-        console.log(err);
+      async function (err: any, response: any) {
         sheetId = response.data.id;
         const sheetLink = response.data.alternateLink;
-        console.log("sheetIdd", sheetId);
         const sheetIdPair = {
           sheetId: sheetId,
           facebookPageId: pageId,
         };
         const newSheet = new SheetIdPair(sheetIdPair);
-        await newSheet.save(function(err: any, todo: ISheetIdPair) {
+        await newSheet.save(function (err: any, todo: ISheetIdPair) {
           if (err) console.log(err);
         });
 
@@ -53,12 +50,12 @@ async function copyFile(realFileId: string, pageId: string, email: string) {
 
         var mailOptions = {
           from: "getautorepl@gmail.com",
-          to: "1mustafaersoy@gmail.com",
+          to: email,
           subject: "Your AutoRepl Chatbot was created!",
           text: `Your AutoRepl Chatbot was created! \n Hi, thanks for signup to AutoRepl. This is your Google Sheet link. You can create and update your chatbot via this Google Sheet. \n ${sheetLink}`,
         };
 
-        transporter.sendMail(mailOptions, function(error, info) {
+        transporter.sendMail(mailOptions, function (error, info) {
           if (error) {
             console.log(error);
           } else {
@@ -78,11 +75,11 @@ async function copyFile(realFileId: string, pageId: string, email: string) {
 
 export async function createSheet(request: Request, response: Response) {
   try {
-    const { facebookPageId } = request.body;
-    console.log(facebookPageId);
+    const { facebookPageId, email } = request.body;
     await copyFile(
       "1pWl4BuHX0vK8u3vBvdTgAWm-Womknn_1l_sz0WGooCc",
-      facebookPageId
+      facebookPageId,
+      email
     );
 
     response.send({ success: "true" });
