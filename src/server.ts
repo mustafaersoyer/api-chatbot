@@ -5,22 +5,7 @@ const { connectMongo, disconnectMongo } = require("./db/mongo");
 
 const bodyParser = require("body-parser");
 const compression = require("compression");
-const http = require("http");
 const https = require("https");
-const fs = require("fs");
-
-const app = express();
-
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-
-app.get("/", (req: Request, res: Response) => {
-  res.send("Hello World!");
-});
-
-app.use("/api", router);
-
-app.use(compression());
 
 /*app.listen(3000, () => {
   console.log("Server is running on port 3000");
@@ -41,9 +26,17 @@ connectMongo();
 
 function makeExpressApp() {
   const app = express();
-  app.get("/", (req, res) => {
-    res.json({ message: "Hello, friend" });
+
+  app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded({ extended: true }));
+
+  app.get("/", (req: Request, res: Response) => {
+    res.send("Hello World!");
   });
+
+  app.use("/api", router);
+
+  app.use(compression());
   return app;
 }
 
