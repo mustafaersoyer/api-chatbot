@@ -11,23 +11,11 @@ const fs = require("fs");
 
 const app = express();
 
-const privateKey = fs.readFileSync(
-  "/etc/letsencrypt/live/yourdomain.com/privkey.pem",
-  "utf8"
-);
-const certificate = fs.readFileSync(
-  "/etc/letsencrypt/live/yourdomain.com/cert.pem",
-  "utf8"
-);
-const ca = fs.readFileSync(
-  "/etc/letsencrypt/live/yourdomain.com/chain.pem",
-  "utf8"
-);
-
-const credentials = {
-  key: privateKey,
-  cert: certificate,
-  ca: ca,
+var key = fs.readFileSync(__dirname + "/../certs/selfsigned.key");
+var cert = fs.readFileSync(__dirname + "/../certs/selfsigned.crt");
+var options = {
+  key: key,
+  cert: cert,
 };
 
 app.use(bodyParser.json());
@@ -45,15 +33,10 @@ app.use(compression());
   console.log("Server is running on port 3000");
 });*/
 
-const httpServer = http.createServer(app);
-const httpsServer = https.createServer(credentials, app);
+var server = https.createServer(options, app);
 
-httpServer.listen(80, () => {
-  console.log("HTTP Server running on port 80");
-});
-
-httpsServer.listen(3000, () => {
-  console.log("HTTPS Server running on port 443");
+server.listen(3000, () => {
+  console.log("server starting on port : " + 3000);
 });
 
 connectMongo();
