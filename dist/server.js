@@ -7,19 +7,10 @@ const express_1 = __importDefault(require("express"));
 const routes_1 = require("./routes");
 const forge = require("node-forge");
 const { connectMongo, disconnectMongo } = require("./db/mongo");
+var cors = require("cors");
 const bodyParser = require("body-parser");
 const compression = require("compression");
-const http = require("http");
 const https = require("https");
-const fs = require("fs");
-const app = (0, express_1.default)();
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.get("/", (req, res) => {
-    res.send("Hello World!");
-});
-app.use("/api", routes_1.router);
-app.use(compression());
 /*app.listen(3000, () => {
   console.log("Server is running on port 3000");
 });*/
@@ -33,9 +24,14 @@ server.listen(3000, () => {
 connectMongo();
 function makeExpressApp() {
     const app = (0, express_1.default)();
+    app.use(bodyParser.json());
+    app.use(bodyParser.urlencoded({ extended: true }));
     app.get("/", (req, res) => {
-        res.json({ message: "Hello, friend" });
+        res.send("Hello World!");
     });
+    app.use("/api", routes_1.router);
+    app.use(cors());
+    app.use(compression());
     return app;
 }
 function generateX509Certificate(altNames) {

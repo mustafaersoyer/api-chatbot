@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import { router } from "./routes";
 const forge = require("node-forge");
 const { connectMongo, disconnectMongo } = require("./db/mongo");
+var cors = require("cors");
 
 const bodyParser = require("body-parser");
 const compression = require("compression");
@@ -35,6 +36,8 @@ function makeExpressApp() {
   });
 
   app.use("/api", router);
+
+  app.use(cors());
 
   app.use(compression());
   return app;
