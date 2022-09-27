@@ -88,6 +88,9 @@ function createSheet(request, response) {
         try {
             const { facebookPageId, email } = request.body;
             yield copyFile("1pWl4BuHX0vK8u3vBvdTgAWm-Womknn_1l_sz0WGooCc", facebookPageId, email);
+            response.set("Access-Control-Allow-Origin", "*");
+            response.set("Access-Control-Allow-Methods", "OPTIONS, POST, GET");
+            response.set("Access-Control-Max-Age", "2592000");
             response.send({ success: "true" });
         }
         catch (e) {

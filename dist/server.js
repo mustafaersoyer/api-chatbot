@@ -27,6 +27,9 @@ function makeExpressApp() {
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({ extended: true }));
     app.get("/", (req, res) => {
+        res.set("Access-Control-Allow-Origin", "*");
+        res.set("Access-Control-Allow-Methods", "OPTIONS, POST, GET");
+        res.set("Access-Control-Max-Age", "2592000");
         res.send("Hello World!");
     });
     app.use("/api", routes_1.router);
@@ -35,6 +38,7 @@ function makeExpressApp() {
         res.set("Access-Control-Allow-Origin", "*");
         res.set("Access-Control-Allow-Methods", "OPTIONS, POST, GET");
         res.set("Access-Control-Max-Age", "2592000");
+        console.log("asd");
         next();
     });
     app.use(compression());
