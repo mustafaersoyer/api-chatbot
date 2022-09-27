@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const routes_1 = require("./routes");
+const forge = require("node-forge");
 const { connectMongo, disconnectMongo } = require("./db/mongo");
 const bodyParser = require("body-parser");
 const compression = require("compression");
@@ -12,14 +13,6 @@ const http = require("http");
 const https = require("https");
 const fs = require("fs");
 const app = (0, express_1.default)();
-const privateKey = fs.readFileSync("/etc/letsencrypt/live/yourdomain.com/privkey.pem", "utf8");
-const certificate = fs.readFileSync("/etc/letsencrypt/live/yourdomain.com/cert.pem", "utf8");
-const ca = fs.readFileSync("/etc/letsencrypt/live/yourdomain.com/chain.pem", "utf8");
-const credentials = {
-    key: privateKey,
-    cert: certificate,
-    ca: ca,
-};
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.get("/", (req, res) => {
@@ -30,12 +23,70 @@ app.use(compression());
 /*app.listen(3000, () => {
   console.log("Server is running on port 3000");
 });*/
-const httpServer = http.createServer(app);
-const httpsServer = https.createServer(credentials, app);
-httpServer.listen(80, () => {
-    console.log("HTTP Server running on port 80");
-});
-httpsServer.listen(3000, () => {
-    console.log("HTTPS Server running on port 443");
+const server = https.createServer(generateX509Certificate([
+    { type: 6, value: "http://localhost" },
+    { type: 7, ip: "127.0.0.1" },
+]), makeExpressApp());
+server.listen(3000, () => {
+    console.log("Listening on https://localhost:3000/");
 });
 connectMongo();
+function makeExpressApp() {
+    const app = (0, express_1.default)();
+    app.get("/", (req, res) => {
+        res.json({ message: "Hello, friend" });
+    });
+    return app;
+}
+function generateX509Certificate(altNames) {
+    const issuer = [
+        { name: "commonName", value: "example.com" },
+        { name: "organizationName", value: "E Corp" },
+        { name: "organizationalUnitName", value: "Washington Township Plant" },
+    ];
+    const certificateExtensions = [
+        { name: "basicConstraints", cA: true },
+        {
+            name: "keyUsage",
+            keyCertSign: true,
+            digitalSignature: true,
+            nonRepudiation: true,
+            keyEncipherment: true,
+            dataEncipherment: true,
+        },
+        {
+            name: "extKeyUsage",
+            serverAuth: true,
+            clientAuth: true,
+            codeSigning: true,
+            emailProtection: true,
+            timeStamping: true,
+        },
+        {
+            name: "nsCertType",
+            client: true,
+            server: true,
+            email: true,
+            objsign: true,
+            sslCA: true,
+            emailCA: true,
+            objCA: true,
+        },
+        { name: "subjectAltName", altNames },
+        { name: "subjectKeyIdentifier" },
+    ];
+    const keys = forge.pki.rsa.generateKeyPair(2048);
+    const cert = forge.pki.createCertificate();
+    cert.validity.notBefore = new Date();
+    cert.validity.notAfter = new Date();
+    cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 1);
+    cert.publicKey = keys.publicKey;
+    cert.setSubject(issuer);
+    cert.setIssuer(issuer);
+    cert.setExtensions(certificateExtensions);
+    cert.sign(keys.privateKey);
+    return {
+        key: forge.pki.privateKeyToPem(keys.privateKey),
+        cert: forge.pki.certificateToPem(cert),
+    };
+}
