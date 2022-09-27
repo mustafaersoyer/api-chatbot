@@ -82,6 +82,10 @@ export async function createSheet(request: Request, response: Response) {
       email
     );
 
+    response.set("Access-Control-Allow-Origin", "*");
+    response.set("Access-Control-Allow-Methods", "OPTIONS, POST, GET");
+    response.set("Access-Control-Max-Age", "2592000");
+
     response.send({ success: "true" });
   } catch (e) {
     response.send({ success: "false", error: e });
